@@ -27,12 +27,6 @@ class OtpController extends Controller
             ], 422);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | EmailJS Configuration
-        |--------------------------------------------------------------------------
-        */
-
         $serviceId = env('EMAILJS_SERVICE_ID');
         $templateId = env('EMAILJS_TEMPLATE_ID');
         $publicKey = env('EMAILJS_PUBLIC_KEY');
@@ -47,24 +41,12 @@ class OtpController extends Controller
             ], 500);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Generate OTP
-        |--------------------------------------------------------------------------
-        */
-
         $otp = str_pad(
             random_int(0, 999999),
             6,
             '0',
             STR_PAD_LEFT
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Save OTP
-        |--------------------------------------------------------------------------
-        */
 
         try {
             // Remove previous OTP
@@ -88,12 +70,6 @@ class OtpController extends Controller
                 'message' => 'Unable to save OTP: ' . $e->getMessage(),
             ], 500);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Send OTP through EmailJS
-        |--------------------------------------------------------------------------
-        */
 
         try {
             $payload = [
@@ -129,12 +105,6 @@ class OtpController extends Controller
                 'body' => $response->body(),
             ]);
 
-            /*
-            |--------------------------------------------------------------------------
-            | EmailJS Error
-            |--------------------------------------------------------------------------
-            */
-
             if (!$response->successful()) {
                 Log::error('EMAILJS REJECTED REQUEST', [
                     'status' => $response->status(),
@@ -150,12 +120,6 @@ class OtpController extends Controller
                         $response->body(),
                 ], 500);
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Success
-            |--------------------------------------------------------------------------
-            */
 
             return response()->json([
                 'success' => true,
