@@ -7,6 +7,7 @@ use App\Models\OtpVerification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +16,10 @@ class RegisterController extends Controller
 {
     public function store(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim($request->email)),
+        ]);
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -39,6 +44,7 @@ class RegisterController extends Controller
                 'required',
                 'string',
                 'confirmed',
+
                 Password::min(8)
                     ->mixedCase()
                     ->letters()
@@ -53,21 +59,19 @@ class RegisterController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Check email
+        | CHECK EMAIL
         |--------------------------------------------------------------------------
         */
 
         if (User::where('email', $email)->exists()) {
-
             throw ValidationException::withMessages([
-                'email' =>
-                    'This email is already registered.',
+                'email' => 'This email is already registered.',
             ]);
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Find OTP
+        | FIND LATEST VALID OTP
         |--------------------------------------------------------------------------
         */
 
@@ -84,7 +88,6 @@ class RegisterController extends Controller
         ->first();
 
         if (!$otpRecord) {
-
             throw ValidationException::withMessages([
                 'otp' =>
                     'The verification code is invalid or has expired.',
@@ -93,7 +96,7 @@ class RegisterController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Verify OTP
+        | VERIFY OTP
         |--------------------------------------------------------------------------
         */
 
@@ -103,7 +106,6 @@ class RegisterController extends Controller
                 (string) $validated['otp']
             )
         ) {
-
             throw ValidationException::withMessages([
                 'otp' =>
                     'The verification code is incorrect.',
@@ -112,29 +114,40 @@ class RegisterController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Create User
+        | CREATE ACCOUNT
         |--------------------------------------------------------------------------
         */
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $email,
-            'password' => Hash::make(
-                $validated['password']
-            ),
-        ]);
+        $user = DB::transaction(function () use (
+            $validated,
+            $email,
+            $otpRecord
+        ) {
+
+            $user = User::create([
+                'name' => $validated['name'],
+
+                'email' => $email,
+
+                'password' => Hash::make(
+                    $validated['password']
+                ),
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | DELETE USED OTP
+            |--------------------------------------------------------------------------
+            */
+
+            $otpRecord->delete();
+
+            return $user;
+        });
 
         /*
         |--------------------------------------------------------------------------
-        | Delete OTP
-        |--------------------------------------------------------------------------
-        */
-
-        $otpRecord->delete();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Login
+        | LOGIN
         |--------------------------------------------------------------------------
         */
 
@@ -144,7 +157,7 @@ class RegisterController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Dashboard
+        | DASHBOARD
         |--------------------------------------------------------------------------
         */
 
