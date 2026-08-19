@@ -57,23 +57,11 @@ class RegisterController extends Controller
             trim($validated['email'])
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK EMAIL
-        |--------------------------------------------------------------------------
-        */
-
         if (User::where('email', $email)->exists()) {
             throw ValidationException::withMessages([
                 'email' => 'This email is already registered.',
             ]);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | FIND LATEST VALID OTP
-        |--------------------------------------------------------------------------
-        */
 
         $otpRecord = OtpVerification::where(
             'email',
@@ -94,12 +82,6 @@ class RegisterController extends Controller
             ]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | VERIFY OTP
-        |--------------------------------------------------------------------------
-        */
-
         if (
             !hash_equals(
                 (string) $otpRecord->otp_code,
@@ -111,12 +93,6 @@ class RegisterController extends Controller
                     'The verification code is incorrect.',
             ]);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE ACCOUNT
-        |--------------------------------------------------------------------------
-        */
 
         $user = DB::transaction(function () use (
             $validated,
@@ -134,32 +110,14 @@ class RegisterController extends Controller
                 ),
             ]);
 
-            /*
-            |--------------------------------------------------------------------------
-            | DELETE USED OTP
-            |--------------------------------------------------------------------------
-            */
-
             $otpRecord->delete();
 
             return $user;
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOGIN
-        |--------------------------------------------------------------------------
-        */
-
         Auth::login($user);
 
         $request->session()->regenerate();
-
-        /*
-        |--------------------------------------------------------------------------
-        | DASHBOARD
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()->route('dashboard');
     }
