@@ -70,18 +70,40 @@ export default function Register() {
 
     /*
     |--------------------------------------------------------------------------
+    | PASSWORD STRENGTH
+    |--------------------------------------------------------------------------
+    */
+
+    const passwordChecks = {
+        length: data.password.length >= 8,
+        uppercase: /[A-Z]/.test(data.password),
+        lowercase: /[a-z]/.test(data.password),
+        number: /[0-9]/.test(data.password),
+        symbol: /[^A-Za-z0-9]/.test(data.password),
+    };
+
+    const passwordScore = Object.values(passwordChecks).filter(Boolean).length;
+
+    let passwordStrength = '';
+
+    if (data.password.length === 0) {
+        passwordStrength = '';
+    } else if (passwordScore <= 2) {
+        passwordStrength = 'Weak';
+    } else if (passwordScore === 3 || passwordScore === 4) {
+        passwordStrength = 'Fair';
+    } else {
+        passwordStrength = 'Strong';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | SEND OTP
     |--------------------------------------------------------------------------
     */
 
     const handleSendOTP = async () => {
         const email = data.email.trim().toLowerCase();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Validate email
-        |--------------------------------------------------------------------------
-        */
 
         if (!email) {
             toast.error('Please enter your email first.');
@@ -95,23 +117,11 @@ export default function Register() {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent duplicate requests
-        |--------------------------------------------------------------------------
-        */
-
         if (isSending || countdown > 0) {
             return;
         }
 
         setIsSending(true);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Send request
-        |--------------------------------------------------------------------------
-        */
 
         try {
             const response = await axios.post(
@@ -127,33 +137,15 @@ export default function Register() {
                 }
             );
 
-            console.log('OTP SUCCESS:', response);
-
-            /*
-            |--------------------------------------------------------------------------
-            | SUCCESS
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                response.status >= 200 &&
-                response.status < 300
-            ) {
+            if (response.status >= 200 && response.status < 300) {
                 toast.success(
                     response.data?.message ||
                     `OTP sent successfully to ${email}`
                 );
 
                 setCountdown(180);
-
                 return;
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Unexpected response
-            |--------------------------------------------------------------------------
-            */
 
             toast.error(
                 response.data?.message ||
@@ -164,22 +156,7 @@ export default function Register() {
 
         } catch (error) {
             console.error('OTP ERROR:', error);
-
-            console.error(
-                'STATUS:',
-                error.response?.status
-            );
-
-            console.error(
-                'SERVER RESPONSE:',
-                error.response?.data
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Laravel validation error
-            |--------------------------------------------------------------------------
-            */
+            console.error('SERVER RESPONSE:', error.response?.data);
 
             if (error.response?.status === 422) {
                 toast.error(
@@ -191,12 +168,6 @@ export default function Register() {
                 return;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Rate limit
-            |--------------------------------------------------------------------------
-            */
-
             if (error.response?.status === 429) {
                 toast.error(
                     'Too many OTP requests. Please wait before trying again.'
@@ -205,12 +176,6 @@ export default function Register() {
                 setIsSending(false);
                 return;
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Server error
-            |--------------------------------------------------------------------------
-            */
 
             if (error.response?.status >= 500) {
                 toast.error(
@@ -222,16 +187,7 @@ export default function Register() {
                 return;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Network error
-            |--------------------------------------------------------------------------
-            */
-
-            toast.error(
-                'Unable to connect to the server.'
-            );
-
+            toast.error('Unable to connect to the server.');
             setIsSending(false);
         }
     };
@@ -245,22 +201,10 @@ export default function Register() {
     const submit = (e) => {
         e.preventDefault();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Name validation
-        |--------------------------------------------------------------------------
-        */
-
         if (!data.name.trim()) {
             toast.error('Please enter your full name.');
             return;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Email validation
-        |--------------------------------------------------------------------------
-        */
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -268,12 +212,6 @@ export default function Register() {
             toast.error('Please enter a valid email address.');
             return;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | OTP validation
-        |--------------------------------------------------------------------------
-        */
 
         if (!data.otp) {
             toast.error('Please enter the verification code.');
@@ -287,7 +225,7 @@ export default function Register() {
 
         /*
         |--------------------------------------------------------------------------
-        | Password validation
+        | PASSWORD VALIDATION
         |--------------------------------------------------------------------------
         */
 
@@ -296,64 +234,91 @@ export default function Register() {
             return;
         }
 
-        if (data.password.length < 8) {
-            toast.error(
-                'Password must be at least 8 characters.'
-            );
+        if (!passwordChecks.length) {
+            toast.error('Password must contain at least 8 characters.');
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Confirm password
-        |--------------------------------------------------------------------------
-        */
+        if (!passwordChecks.uppercase) {
+            toast.error('Password must contain at least one uppercase letter.');
+            return;
+        }
+
+        if (!passwordChecks.lowercase) {
+            toast.error('Password must contain at least one lowercase letter.');
+            return;
+        }
+
+        if (!passwordChecks.number) {
+            toast.error('Password must contain at least one number.');
+            return;
+        }
+
+        if (!passwordChecks.symbol) {
+            toast.error('Password must contain at least one symbol.');
+            return;
+        }
 
         if (!data.password_confirmation) {
-            toast.error(
-                'Please confirm your password.'
-            );
+            toast.error('Please confirm your password.');
             return;
         }
 
-        if (
-            data.password !==
-            data.password_confirmation
-        ) {
-            toast.error(
-                'Passwords do not match.'
-            );
+        if (data.password !== data.password_confirmation) {
+            toast.error('Passwords do not match.');
             return;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Submit to Laravel
+        | SUBMIT
         |--------------------------------------------------------------------------
         */
 
         post('/register', {
+
+            preserveScroll: true,
+
             onStart: () => {
                 console.log('Registration started...');
             },
 
-            onSuccess: () => {
-                toast.success(
-                    'Account created successfully!'
-                );
+            /*
+            |--------------------------------------------------------------------------
+            | ONLY SHOW SUCCESS IF REGISTRATION REALLY SUCCEEDED
+            |--------------------------------------------------------------------------
+            */
+
+            onSuccess: (page) => {
+
+                console.log('Registration SUCCESS:', page);
+
+                /*
+                 * RegisterController redirects to /dashboard
+                 * ONLY after User::create() succeeds.
+                 */
+
+                if (
+                    page?.url?.includes('/dashboard')
+                ) {
+                    toast.success(
+                        'Account created successfully!'
+                    );
+                }
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDATION ERRORS
+            |--------------------------------------------------------------------------
+            */
+
             onError: (formErrors) => {
+
                 console.error(
                     'Registration errors:',
                     formErrors
                 );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Display specific Laravel validation error
-                |--------------------------------------------------------------------------
-                */
 
                 if (formErrors.name) {
                     toast.error(formErrors.name);
@@ -412,9 +377,7 @@ export default function Register() {
 
                 <div className="w-full max-w-xl py-8">
 
-                    {/* =================================================
-                        LOGO
-                    ================================================= */}
+                    {/* LOGO */}
 
                     <div className="mb-10 text-center lg:text-left flex flex-col items-center lg:items-start">
 
@@ -458,18 +421,14 @@ export default function Register() {
 
                     </div>
 
-                    {/* =================================================
-                        FORM
-                    ================================================= */}
+                    {/* FORM */}
 
                     <form
                         onSubmit={submit}
                         className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6"
                     >
 
-                        {/* =================================================
-                            NAME
-                        ================================================= */}
+                        {/* NAME */}
 
                         <div className="md:col-span-2">
 
@@ -485,10 +444,7 @@ export default function Register() {
                                 type="text"
                                 value={data.name}
                                 onChange={(e) =>
-                                    setData(
-                                        'name',
-                                        e.target.value
-                                    )
+                                    setData('name', e.target.value)
                                 }
                                 autoComplete="name"
                                 autoFocus
@@ -508,9 +464,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            EMAIL
-                        ================================================= */}
+                        {/* EMAIL */}
 
                         <div className="flex flex-col">
 
@@ -573,9 +527,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            OTP
-                        ================================================= */}
+                        {/* OTP */}
 
                         <div className="flex flex-col">
 
@@ -599,10 +551,7 @@ export default function Register() {
                                             ''
                                         );
 
-                                    setData(
-                                        'otp',
-                                        value
-                                    );
+                                    setData('otp', value);
                                 }}
                                 placeholder="000000"
                                 className={`w-full px-5 py-3.5 text-center tracking-[0.5em] text-lg font-mono font-bold rounded-xl border bg-gray-50 ${
@@ -620,9 +569,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            PASSWORD
-                        ================================================= */}
+                        {/* PASSWORD */}
 
                         <div className="flex flex-col">
 
@@ -661,9 +608,7 @@ export default function Register() {
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        setShowPassword(
-                                            !showPassword
-                                        )
+                                        setShowPassword(!showPassword)
                                     }
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
                                 >
@@ -674,6 +619,82 @@ export default function Register() {
 
                             </div>
 
+                            {/* PASSWORD STRENGTH */}
+
+                            {data.password && (
+                                <div className="mt-3">
+
+                                    <div className="flex gap-1.5 mb-2">
+
+                                        {[1, 2, 3, 4, 5].map((level) => (
+                                            <div
+                                                key={level}
+                                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                                                    level <= passwordScore
+                                                        ? passwordScore <= 2
+                                                            ? 'bg-red-500'
+                                                            : passwordScore <= 4
+                                                                ? 'bg-yellow-500'
+                                                                : 'bg-green-500'
+                                                        : 'bg-gray-200'
+                                                }`}
+                                            />
+                                        ))}
+
+                                    </div>
+
+                                    <div className="flex justify-between items-center">
+
+                                        <span
+                                            className={`text-xs font-semibold ${
+                                                passwordScore <= 2
+                                                    ? 'text-red-600'
+                                                    : passwordScore <= 4
+                                                        ? 'text-yellow-600'
+                                                        : 'text-green-600'
+                                            }`}
+                                        >
+                                            {passwordStrength}
+                                        </span>
+
+                                        <span className="text-xs text-gray-400">
+                                            {passwordScore}/5 requirements
+                                        </span>
+
+                                    </div>
+
+                                    <div className="mt-3 space-y-1">
+
+                                        <PasswordRequirement
+                                            valid={passwordChecks.length}
+                                            text="At least 8 characters"
+                                        />
+
+                                        <PasswordRequirement
+                                            valid={passwordChecks.uppercase}
+                                            text="One uppercase letter"
+                                        />
+
+                                        <PasswordRequirement
+                                            valid={passwordChecks.lowercase}
+                                            text="One lowercase letter"
+                                        />
+
+                                        <PasswordRequirement
+                                            valid={passwordChecks.number}
+                                            text="One number"
+                                        />
+
+                                        <PasswordRequirement
+                                            valid={passwordChecks.symbol}
+                                            text="One symbol"
+                                        />
+
+                                    </div>
+
+                                </div>
+                            )}
+
                             {errors.password && (
                                 <p className="mt-2 text-sm text-red-600 font-medium">
                                     {errors.password}
@@ -682,9 +703,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            CONFIRM PASSWORD
-                        ================================================= */}
+                        {/* CONFIRM PASSWORD */}
 
                         <div className="flex flex-col">
 
@@ -746,28 +765,16 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            PASSWORD REQUIREMENTS
-                        ================================================= */}
-
-                        <div className="md:col-span-2 -mt-3">
-
-                            <p className="text-xs text-gray-500">
-                                Minimum 8 characters with uppercase,
-                                lowercase, number, and symbol.
-                            </p>
-
-                        </div>
-
-                        {/* =================================================
-                            REGISTER BUTTON
-                        ================================================= */}
+                        {/* REGISTER BUTTON */}
 
                         <div className="md:col-span-2 mt-2">
 
                             <button
                                 type="submit"
-                                disabled={processing}
+                                disabled={
+                                    processing ||
+                                    passwordScore !== 5
+                                }
                                 className="w-full py-3.5 px-4 bg-gray-900 text-white font-semibold rounded-xl hover:bg-black focus:outline-none focus:ring-4 focus:ring-gray-900/20 shadow-lg shadow-gray-900/20 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 {processing
@@ -777,9 +784,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            DIVIDER
-                        ================================================= */}
+                        {/* DIVIDER */}
 
                         <div className="md:col-span-2 relative my-2">
 
@@ -797,9 +802,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            GOOGLE BUTTON
-                        ================================================= */}
+                        {/* GOOGLE */}
 
                         <div className="md:col-span-2">
 
@@ -816,17 +819,14 @@ export default function Register() {
                                         fill="#EA4335"
                                         d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
                                     />
-
                                     <path
                                         fill="#4285F4"
                                         d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
                                     />
-
                                     <path
                                         fill="#FBBC05"
                                         d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
                                     />
-
                                     <path
                                         fill="#34A853"
                                         d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
@@ -839,9 +839,7 @@ export default function Register() {
 
                         </div>
 
-                        {/* =================================================
-                            LOGIN
-                        ================================================= */}
+                        {/* LOGIN */}
 
                         <div className="md:col-span-2 text-center mt-2">
 
@@ -866,9 +864,7 @@ export default function Register() {
 
             </div>
 
-            {/* =========================================================
-                RIGHT SIDE IMAGE
-            ========================================================= */}
+            {/* RIGHT IMAGE */}
 
             <div className="hidden lg:flex lg:w-1/2 bg-white">
 
@@ -879,6 +875,40 @@ export default function Register() {
                 />
 
             </div>
+
+        </div>
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| PASSWORD REQUIREMENT COMPONENT
+|--------------------------------------------------------------------------
+*/
+
+function PasswordRequirement({ valid, text }) {
+    return (
+        <div className="flex items-center gap-2">
+
+            <div
+                className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    valid
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-gray-100 text-gray-400'
+                }`}
+            >
+                {valid ? '✓' : '•'}
+            </div>
+
+            <span
+                className={`text-xs ${
+                    valid
+                        ? 'text-green-600'
+                        : 'text-gray-500'
+                }`}
+            >
+                {text}
+            </span>
 
         </div>
     );
