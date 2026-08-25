@@ -3,6 +3,10 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\OtpController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +14,7 @@ use Inertia\Inertia;
 
 Route::inertia('/', 'Landing/Index')
     ->name('home');
+
 Route::middleware('guest')->group(function () {
     // LOGIN PAGE
     Route::inertia('/login', 'Auth/Login')
@@ -32,10 +37,26 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+
     // DASHBOARD
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // ANALYTICS
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+        ->name('analytics');
+
+    // INVENTORY (PRODUCTS)
+    // /inventory, /inventory/create, /inventory/{product}/edit, etc.
+    Route::resource('inventory', ProductController::class)
+        ->parameters(['inventory' => 'product'])
+        ->except(['show']);
+
+    // CATEGORIES
+    // list + create/update/delete only, no dedicated show/create/edit pages
+    Route::resource('categories', CategoryController::class)
+        ->except(['show', 'create', 'edit']);
+
     // LOGOUT
     Route::post('/logout', function (Request $request) {
         Auth::logout();

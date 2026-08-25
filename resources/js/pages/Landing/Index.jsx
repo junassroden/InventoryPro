@@ -70,7 +70,7 @@ export default function Index() {
                                 href="/login"
                                 className="hidden sm:inline-flex text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 transition-colors"
                             >
-                                Sign In
+                                Login
                             </Link>
 
                             <Link

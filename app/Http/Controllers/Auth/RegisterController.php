@@ -29,7 +29,7 @@ class RegisterController extends Controller
 
             'email' => [
                 'required',
-                'string',
+                'string',   
                 'email',
                 'max:255',
                 'unique:users,email',

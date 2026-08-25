@@ -1,264 +1,369 @@
 import React from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
-
+import { Link } from '@inertiajs/react';
 import {
-    LayoutDashboard,
     Package,
-    BarChart3,
-    Settings,
-    LogOut,
-    Menu,
-    X,
     Boxes,
-    UserCircle,
+    Layers,
+    AlertTriangle,
+    ArrowRight,
+    Plus,
 } from 'lucide-react';
 
-export default function DashboardLayout({
-    children,
-    title = 'Dashboard',
+import DashboardLayout from '../../layouts/DashboardLayout';
+
+export default function Dashboard({
+    stats = {
+        totalProducts: 0,
+        totalCategories: 0,
+        totalStock: 0,
+        lowStockCount: 0,
+    },
+    recentProducts = [],
+    lowStockProducts = [],
+    lowStockThreshold = 10,
 }) {
-
-    const { auth } = usePage().props;
-
-    const [sidebarOpen, setSidebarOpen] = React.useState(false);
-
-    const logout = () => {
-        router.post('/logout');
-    };
-
     return (
-        <div className="min-h-screen bg-slate-50 font-sans">
+        <DashboardLayout title="Dashboard">
 
             {/* =========================================================
-                MOBILE OVERLAY
+                WELCOME + QUICK ACTION
             ========================================================= */}
 
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-            {/* =========================================================
-                SIDEBAR
-            ========================================================= */}
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">
+                        Here's what's happening in your inventory
+                    </h2>
 
-            <aside
-                className={`
-                    fixed
-                    inset-y-0
-                    left-0
-                    z-50
-                    w-64
-                    bg-white
-                    border-r
-                    border-slate-200
-                    transform
-                    transition-transform
-                    duration-300
-                    lg:translate-x-0
-                    ${
-                        sidebarOpen
-                            ? 'translate-x-0'
-                            : '-translate-x-full'
-                    }
-                `}
-            >
-
-                {/* LOGO */}
-
-                <div className="h-20 px-6 flex items-center justify-between border-b border-slate-100">
-
-                    <Link
-                        href="/dashboard"
-                        className="flex items-center gap-3"
-                    >
-
-                        <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm">
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-                                />
-                            </svg>
-
-                        </div>
-
-                        <span className="text-xl font-bold text-slate-900">
-                            Inventory
-                            <span className="text-blue-500">
-                                .
-                            </span>
-                        </span>
-
-                    </Link>
-
-                    <button
-                        onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden text-slate-500 hover:text-slate-900"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-
+                    <p className="text-sm text-slate-500 mt-1">
+                        A quick snapshot of your stock, right now.
+                    </p>
                 </div>
 
-                {/* NAVIGATION */}
-
-                <nav className="p-4 space-y-1">
-
-                    <SidebarLink
-                        href="/dashboard"
-                        icon={<LayoutDashboard className="w-5 h-5" />}
-                        label="Dashboard"
-                    />
-
-                    <SidebarLink
-                        href="#inventory"
-                        icon={<Package className="w-5 h-5" />}
-                        label="Inventory"
-                    />
-
-                    <SidebarLink
-                        href="#analytics"
-                        icon={<BarChart3 className="w-5 h-5" />}
-                        label="Analytics"
-                    />
-
-                    <SidebarLink
-                        href="#categories"
-                        icon={<Boxes className="w-5 h-5" />}
-                        label="Categories"
-                    />
-
-                    <SidebarLink
-                        href="#settings"
-                        icon={<Settings className="w-5 h-5" />}
-                        label="Settings"
-                    />
-
-                </nav>
-
-                {/* USER */}
-
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100">
-
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-
-                        <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center">
-
-                            <UserCircle className="w-6 h-6" />
-
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-
-                            <p className="text-sm font-semibold text-slate-900 truncate">
-                                {auth?.user?.name || 'User'}
-                            </p>
-
-                            <p className="text-xs text-slate-500 truncate">
-                                {auth?.user?.email || ''}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <button
-                        onClick={logout}
-                        className="w-full mt-2 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
-                    >
-
-                        <LogOut className="w-4 h-4" />
-
-                        Sign out
-
-                    </button>
-
-                </div>
-
-            </aside>
-
-            {/* =========================================================
-                MAIN AREA
-            ========================================================= */}
-
-            <div className="lg:pl-64 min-h-screen">
-
-                {/* TOP BAR */}
-
-                <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-
-                    <div className="flex items-center gap-4">
-
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden p-2 rounded-lg hover:bg-slate-100"
-                        >
-                            <Menu className="w-6 h-6 text-slate-700" />
-                        </button>
-
-                        <div>
-
-                            <h1 className="text-lg sm:text-xl font-bold text-slate-900">
-                                {title}
-                            </h1>
-
-                            <p className="text-xs text-slate-500 hidden sm:block">
-                                InventoryPro Management System
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="flex items-center gap-3">
-
-                        <div className="hidden sm:block text-right">
-
-                            <p className="text-sm font-semibold text-slate-900">
-                                {auth?.user?.name || 'User'}
-                            </p>
-
-                            <p className="text-xs text-slate-500">
-                                Administrator
-                            </p>
-
-                        </div>
-
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-
-                            <UserCircle className="w-6 h-6" />
-
-                        </div>
-
-                    </div>
-
-                </header>
-
-                {/* CONTENT */}
-
-                <main className="p-4 sm:p-6 lg:p-8">
-
-                    <div className="max-w-7xl mx-auto space-y-6">
-
-                        {children}
-
-                    </div>
-
-                </main>
+                <Link
+                    href="/inventory/create"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-black transition-colors shadow-sm shrink-0"
+                >
+                    <Plus className="w-4 h-4" />
+                    Add Product
+                </Link>
 
             </div>
+
+            {/* =========================================================
+                STAT CARDS
+            ========================================================= */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <StatCard
+                    icon={<Package className="w-5 h-5" />}
+                    label="Total Products"
+                    value={stats.totalProducts}
+                    accent="bg-slate-900 text-white"
+                />
+
+                <StatCard
+                    icon={<Boxes className="w-5 h-5" />}
+                    label="Categories"
+                    value={stats.totalCategories}
+                    accent="bg-blue-500 text-white"
+                />
+
+                <StatCard
+                    icon={<Layers className="w-5 h-5" />}
+                    label="Available Stock"
+                    value={Number(stats.totalStock || 0).toLocaleString()}
+                    accent="bg-green-500 text-white"
+                />
+
+                <StatCard
+                    icon={<AlertTriangle className="w-5 h-5" />}
+                    label={`Low Stock (≤ ${lowStockThreshold})`}
+                    value={stats.lowStockCount}
+                    accent="bg-amber-500 text-white"
+                />
+
+            </div>
+
+            {/* =========================================================
+                PRODUCTS + LOW STOCK
+            ========================================================= */}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                {/* =====================================================
+                    RECENT PRODUCTS
+                ===================================================== */}
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+
+                    <div className="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-900">
+                                Recently Added
+                            </h2>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                                Your latest inventory items
+                            </p>
+                        </div>
+
+                        <Link
+                            href="/inventory"
+                            className="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
+                        >
+                            View all
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+
+                    </div>
+
+                    {recentProducts.length === 0 ? (
+                        <EmptyState
+                            message="No products yet."
+                            actionLabel="Add your first product"
+                            actionHref="/inventory/create"
+                        />
+                    ) : (
+                        <ul className="space-y-3">
+
+                            {recentProducts.map((product) => (
+
+                                <li
+                                    key={product.id}
+                                    className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors"
+                                >
+
+                                    <div className="flex items-center gap-3 min-w-0">
+
+                                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                                            <Package className="w-4 h-4 text-slate-600" />
+                                        </div>
+
+                                        <div className="min-w-0">
+
+                                            <p className="text-sm font-semibold text-slate-900 truncate">
+                                                {product.name}
+                                            </p>
+
+                                            <p className="text-xs text-slate-500 truncate">
+                                                {product.category || 'Uncategorized'}
+                                                {product.created_at
+                                                    ? ` · ${product.created_at}`
+                                                    : ''
+                                                }
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div className="text-right shrink-0 ml-3">
+
+                                        <p className="text-sm font-bold text-slate-900">
+                                            {product.stock ?? 0}
+                                        </p>
+
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-wide">
+                                            Stock
+                                        </p>
+
+                                    </div>
+
+                                </li>
+
+                            ))}
+
+                        </ul>
+                    )}
+
+                </div>
+
+                {/* =====================================================
+                    LOW STOCK ALERTS
+                ===================================================== */}
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+
+                    <div className="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-900">
+                                Low Stock Alerts
+                            </h2>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                                Products that need attention
+                            </p>
+                        </div>
+
+                        <Link
+                            href="/analytics"
+                            className="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
+                        >
+                            Full analytics
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+
+                    </div>
+
+                    {lowStockProducts.length === 0 ? (
+
+                        <EmptyState
+                            message="Everything is well stocked."
+                        />
+
+                    ) : (
+
+                        <ul className="space-y-3">
+
+                            {lowStockProducts.map((product) => (
+
+                                <li
+                                    key={product.id}
+                                    className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-100"
+                                >
+
+                                    <div className="flex items-center gap-3 min-w-0">
+
+                                        <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0">
+                                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                        </div>
+
+                                        <div className="min-w-0">
+
+                                            <p className="text-sm font-semibold text-slate-900 truncate">
+                                                {product.name}
+                                            </p>
+
+                                            <p className="text-xs text-slate-500 truncate">
+                                                {product.category || 'Uncategorized'}
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                    <span
+                                        className={`
+                                            text-xs
+                                            font-bold
+                                            px-2.5
+                                            py-1
+                                            rounded-full
+                                            shrink-0
+                                            ml-3
+                                            ${
+                                                Number(product.stock) === 0
+                                                    ? 'bg-red-100 text-red-600'
+                                                    : 'bg-amber-100 text-amber-600'
+                                            }
+                                        `}
+                                    >
+                                        {product.stock ?? 0} left
+                                    </span>
+
+                                </li>
+
+                            ))}
+
+                        </ul>
+
+                    )}
+
+                </div>
+
+            </div>
+
+            {/* =========================================================
+                INVENTORY OVERVIEW
+            ========================================================= */}
+
+            <div className="bg-slate-900 rounded-2xl p-6 sm:p-8 text-white">
+
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+                    <div>
+
+                        <div className="flex items-center gap-2 mb-2">
+
+                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                <Package className="w-4 h-4" />
+                            </div>
+
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                                Inventory Overview
+                            </span>
+
+                        </div>
+
+                        <h3 className="text-xl font-bold">
+                            Keep your inventory under control
+                        </h3>
+
+                        <p className="text-sm text-slate-400 mt-1 max-w-xl">
+                            Monitor your products, stock levels, and categories
+                            from one centralized dashboard.
+                        </p>
+
+                    </div>
+
+                    <Link
+                        href="/inventory"
+                        className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors shrink-0"
+                    >
+                        Manage Inventory
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+
+                </div>
+
+            </div>
+
+        </DashboardLayout>
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| STAT CARD
+|--------------------------------------------------------------------------
+*/
+
+function StatCard({
+    icon,
+    label,
+    value,
+    accent,
+}) {
+    return (
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+
+            <div
+                className={`
+                    w-10
+                    h-10
+                    rounded-xl
+                    flex
+                    items-center
+                    justify-center
+                    mb-4
+                    ${accent}
+                `}
+            >
+                {icon}
+            </div>
+
+            <p className="text-2xl font-extrabold text-slate-900">
+                {value}
+            </p>
+
+            <p className="text-xs font-medium text-slate-500 mt-1">
+                {label}
+            </p>
 
         </div>
     );
@@ -266,43 +371,36 @@ export default function DashboardLayout({
 
 /*
 |--------------------------------------------------------------------------
-| SIDEBAR LINK
+| EMPTY STATE
 |--------------------------------------------------------------------------
 */
 
-function SidebarLink({
-    href,
-    icon,
-    label,
+function EmptyState({
+    message,
+    actionLabel,
+    actionHref,
 }) {
-
-    const isDashboard = href === '/dashboard';
-
     return (
-        <Link
-            href={href}
-            className={`
-                flex
-                items-center
-                gap-3
-                px-4
-                py-3
-                rounded-xl
-                text-sm
-                font-medium
-                transition-all
-                ${
-                    isDashboard
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }
-            `}
-        >
+        <div className="py-10 text-center">
 
-            {icon}
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-100 flex items-center justify-center">
+                <Package className="w-5 h-5 text-slate-400" />
+            </div>
 
-            {label}
+            <p className="text-sm text-slate-400">
+                {message}
+            </p>
 
-        </Link>
+            {actionLabel && actionHref && (
+                <Link
+                    href={actionHref}
+                    className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                >
+                    {actionLabel}
+                    <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+            )}
+
+        </div>
     );
 }

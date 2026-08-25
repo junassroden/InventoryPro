@@ -23,7 +23,7 @@ export default function InventoryIndex() {
     // Mock inventory list for the UI view
     const [inventoryItems, setInventoryItems] = useState([
         { id: 1, name: "Ergonomic Office Chair", category: "Furniture", stock: 42, status: "In Stock", price: "$249.00" },
-        { id: 2, name: "Wireless Mechanical Keyboard", category: "Electronics", stock: 4, status: "Low Stock", price: "$129.00" },
+        { id: 2, name: "Wireless Mechanical Key board", category: "Electronics", stock: 4, status: "Low Stock", price: "$129.00" },
         { id: 3, name: "Ultra-Wide 4K Monitor", category: "Electronics", stock: 18, status: "In Stock", price: "$599.00" },
         { id: 4, name: "Adjustable Standing Desk", category: "Furniture", stock: 0, status: "Out of Stock", price: "$499.00" },
         { id: 5, name: "Noise-Cancelling Headphones", category: "Electronics", stock: 12, status: "In Stock", price: "$199.00" },
@@ -49,7 +49,7 @@ export default function InventoryIndex() {
                 <div>
                     <button 
                         onClick={() => setIsAddModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transi   tion-all"
                     >
                         <Plus className="w-4 h-4" />
                         Add Product
