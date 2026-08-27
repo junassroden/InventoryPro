@@ -14,6 +14,8 @@ export default function Login() {
         post,
         processing,
         errors,
+        setError,
+        clearErrors,
         reset,
     } = useForm({
         email: '',
@@ -24,6 +26,32 @@ export default function Login() {
     const submit = (e) => {
 
         e.preventDefault();
+
+        clearErrors();
+
+        const email = data.email.trim().toLowerCase();
+
+        if (!email) {
+            setError('email', 'Please enter your email address.');
+            return;
+        }
+
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            setError('email', 'Please enter a valid email address.');
+            return;
+        }
+
+        if (!data.password) {
+            setError('password', 'Please enter your password.');
+            return;
+        }
+
+        if (data.password.length > 128) {
+            setError('password', 'Password must be 128 characters or fewer.');
+            return;
+        }
+
+        setData('email', email);
 
         post('/login', {
 
