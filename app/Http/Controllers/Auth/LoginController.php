@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +40,12 @@ class LoginController extends Controller
             'email' => $email,
             'password' => $validated['password'],
         ];
+
+        if (!User::where('email', $email)->exists()) {
+            throw ValidationException::withMessages([
+                'email' => "Account doesn't exist.",
+            ]);
+        }
 
         if (!Auth::attempt(
             $credentials,

@@ -34,28 +34,6 @@ export default function Login() {
                 // Laravel will redirect to /dashboard.
             },
 
-            onError: (formErrors) => {
-
-                console.log(
-                    'Login errors:',
-                    formErrors
-                );
-
-                if (formErrors.email) {
-                    toast.error(formErrors.email);
-                    return;
-                }
-
-                if (formErrors.password) {
-                    toast.error(formErrors.password);
-                    return;
-                }
-
-                toast.error(
-                    'The email or password is incorrect.'
-                );
-            },
-
             onFinish: () => {
                 reset('password');
             },
@@ -63,7 +41,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex bg-white font-sans">
+        <div className="min-h-[100dvh] lg:h-[100dvh] flex bg-white font-sans">
 
             <Toaster
                 position="top-right"
@@ -74,17 +52,17 @@ export default function Login() {
                 LEFT SIDE
             ========================================================= */}
 
-            <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 lg:px-16 xl:px-24 bg-white">
+            <div className="w-full lg:w-1/2 min-h-[100dvh] lg:h-[100dvh] flex items-start lg:items-center justify-center px-4 py-6 sm:px-6 sm:py-8 lg:px-16 lg:py-10 xl:px-24 bg-white overflow-y-auto">
 
-                <div className="w-full max-w-xl py-8">
+                <div className="w-full max-w-xl py-2 sm:py-4 lg:py-6">
 
                     {/* =================================================
                         LOGO
                     ================================================= */}
 
-                    <div className="mb-10 text-center lg:text-left flex flex-col items-center lg:items-start">
+                    <div className="mb-8 lg:mb-10 text-center lg:text-left flex flex-col items-center lg:items-start">
 
-                        <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center gap-3 mb-4 lg:mb-6">
 
                             <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shadow-md">
 
@@ -130,7 +108,7 @@ export default function Login() {
 
                     <form
                         onSubmit={submit}
-                        className="space-y-6"
+                        className="space-y-5 lg:space-y-6"
                     >
 
                         {/* EMAIL */}

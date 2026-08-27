@@ -8,16 +8,14 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    private const LOW_STOCK_THRESHOLD = 10;
-
     public function index()
     {
         $totalProducts = Product::count();
         $totalCategories = Category::count();
         $totalStock = (int) Product::sum('stock');
 
-        $lowStockCount = Product::where('stock', '>', 0)
-            ->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+        $lowStockCount = Product::whereColumn('stock', '<=', 'min_stock')
+            ->where('stock', '>', 0)
             ->count();
 
         $outOfStockCount = Product::where('stock', 0)->count();
@@ -47,7 +45,7 @@ class DashboardController extends Controller
         */
 
         $lowStockProducts = Product::with('category:id,name')
-            ->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+            ->whereColumn('stock', '<=', 'min_stock')
             ->orderBy('stock')
             ->limit(5)
             ->get()
@@ -56,6 +54,7 @@ class DashboardController extends Controller
                 'name' => $product->name,
                 'category' => $product->category->name ?? 'Uncategorized',
                 'stock' => $product->stock,
+                'status' => $product->stock === 0 ? 'Out of Stock' : ($product->stock <= $product->min_stock ? 'Low Stock' : 'In Stock'),
             ]);
 
         return Inertia::render('Dashboard/Dashboard', [
@@ -68,7 +67,6 @@ class DashboardController extends Controller
             ],
             'recentProducts' => $recentProducts,
             'lowStockProducts' => $lowStockProducts,
-            'lowStockThreshold' => self::LOW_STOCK_THRESHOLD,
         ]);
     }
 }

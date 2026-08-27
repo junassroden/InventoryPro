@@ -9,8 +9,6 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    private const LOW_STOCK_THRESHOLD = 10;
-
     /*
     |--------------------------------------------------------------------------
     | LIST PRODUCTS
@@ -20,11 +18,17 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search'));
+        $categoryId = $request->integer('category_id');
+        $status = (string) $request->input('status');
 
         $products = Product::with('category:id,name')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%");
             })
+            ->when($categoryId > 0, fn ($query) => $query->where('category_id', $categoryId))
+            ->when($status === 'out', fn ($query) => $query->where('stock', 0))
+            ->when($status === 'low', fn ($query) => $query->where('stock', '>', 0)->whereColumn('stock', '<=', 'min_stock'))
+            ->when($status === 'in', fn ($query) => $query->whereColumn('stock', '>', 'min_stock'))
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString()
@@ -34,15 +38,19 @@ class ProductController extends Controller
                 'stock' => $product->stock,
                 'category' => $product->category->name ?? 'Uncategorized',
                 'category_id' => $product->category_id,
-                'low_stock' => $product->stock <= self::LOW_STOCK_THRESHOLD,
+                'min_stock' => $product->min_stock,
+                'price' => (float) $product->price,
+                'status' => $product->stock === 0 ? 'Out of Stock' : ($product->stock <= $product->min_stock ? 'Low Stock' : 'In Stock'),
             ]);
 
         return Inertia::render('Inventory/Index', [
             'products' => $products,
             'filters' => [
                 'search' => $search,
+                'category_id' => $categoryId ?: '',
+                'status' => $status,
             ],
-            'lowStockThreshold' => self::LOW_STOCK_THRESHOLD,
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -54,7 +62,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        return Inertia::render('Inventory/Create', [
+        return Inertia::render('Inventory/AddProduct', [
             'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -71,6 +79,8 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'category_id' => ['required', 'exists:categories,id'],
             'stock' => ['required', 'integer', 'min:0'],
+            'min_stock' => ['required', 'integer', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
         ]);
 
         Product::create($validated);
@@ -88,8 +98,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        return Inertia::render('Inventory/Edit', [
-            'product' => $product->only(['id', 'name', 'category_id', 'stock']),
+        return Inertia::render('Inventory/EditProduct', [
+            'product' => $product->only(['id', 'name', 'category_id', 'stock', 'min_stock', 'price']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -106,6 +116,8 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'category_id' => ['required', 'exists:categories,id'],
             'stock' => ['required', 'integer', 'min:0'],
+            'min_stock' => ['required', 'integer', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
         ]);
 
         $product->update($validated);

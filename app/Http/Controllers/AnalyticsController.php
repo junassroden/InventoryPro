@@ -8,19 +8,21 @@ use Inertia\Inertia;
 
 class AnalyticsController extends Controller
 {
-    private const LOW_STOCK_THRESHOLD = 10;
-
     public function index()
     {
         $totalProducts = Product::count();
         $totalCategories = Category::count();
         $totalStock = (int) Product::sum('stock');
 
-        $lowStockCount = Product::where('stock', '>', 0)
-            ->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+        $lowStockCount = Product::whereColumn('stock', '<=', 'min_stock')
+            ->where('stock', '>', 0)
             ->count();
 
         $outOfStockCount = Product::where('stock', 0)->count();
+
+        $categoryValues = Product::selectRaw('category_id, COALESCE(SUM(stock * price), 0) as inventory_value')
+            ->groupBy('category_id')
+            ->pluck('inventory_value', 'category_id');
 
         $stockByCategory = Category::withCount('products')
             ->withSum('products', 'stock')
@@ -29,6 +31,7 @@ class AnalyticsController extends Controller
                 'name' => $category->name,
                 'product_count' => $category->products_count,
                 'total_stock' => (int) ($category->products_sum_stock ?? 0),
+                'inventory_value' => (float) ($categoryValues[$category->id] ?? 0),
             ])
             ->sortByDesc('total_stock')
             ->values();
@@ -44,7 +47,7 @@ class AnalyticsController extends Controller
             ]);
 
         $lowStockProducts = Product::with('category:id,name')
-            ->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+            ->whereColumn('stock', '<=', 'min_stock')
             ->orderBy('stock')
             ->limit(10)
             ->get()
@@ -55,6 +58,22 @@ class AnalyticsController extends Controller
                 'category' => $product->category->name ?? 'Uncategorized',
             ]);
 
+        $recentInventory = Product::with('category:id,name')->latest()->limit(6)->get()->map(fn ($product) => [
+            'name' => $product->name,
+            'category' => $product->category->name ?? 'Uncategorized',
+            'stock' => $product->stock,
+            'value' => round($product->stock * (float) $product->price, 2),
+            'created_at' => $product->created_at?->diffForHumans(),
+        ]);
+
+        $inventoryGrowth = Product::query()->get(['created_at', 'stock'])
+            ->groupBy(fn ($product) => $product->created_at?->format('Y-m'))
+            ->map(fn ($products, $month) => [
+                'month' => $month,
+                'items' => $products->count(),
+                'stock' => (int) $products->sum('stock'),
+            ])->values();
+
         return Inertia::render('Analytics', [
             'stats' => [
                 'totalProducts' => $totalProducts,
@@ -62,11 +81,13 @@ class AnalyticsController extends Controller
                 'totalStock' => $totalStock,
                 'lowStockCount' => $lowStockCount,
                 'outOfStockCount' => $outOfStockCount,
+                'totalValue' => round((float) Product::selectRaw('COALESCE(SUM(stock * price), 0) as total')->value('total'), 2),
             ],
             'stockByCategory' => $stockByCategory,
             'topProducts' => $topProducts,
             'lowStockProducts' => $lowStockProducts,
-            'lowStockThreshold' => self::LOW_STOCK_THRESHOLD,
+            'recentInventory' => $recentInventory,
+            'inventoryGrowth' => $inventoryGrowth,
         ]);
     }
 }
