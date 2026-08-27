@@ -1,11 +1,12 @@
 // resources/js/pages/Inventory/AddProduct.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 
 import DashboardLayout from '../../components/DashboardLayout';
 
 export default function AddProduct({ categories }) {
+    const [imagePreview, setImagePreview] = useState(null);
 
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -13,11 +14,12 @@ export default function AddProduct({ categories }) {
         stock: 0,
         min_stock: 10,
         price: 0,
+        image: null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        post('/inventory');
+        post('/inventory', { forceFormData: true });
     };
 
     return (
@@ -55,6 +57,13 @@ export default function AddProduct({ categories }) {
                         {errors.name && (
                             <p className="mt-2 text-sm text-red-600 font-medium">{errors.name}</p>
                         )}
+                    </div>
+
+                    <div>
+                        <label htmlFor="image" className="block text-sm font-semibold text-slate-700 mb-2">Product Image</label>
+                        <input id="image" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.target.files?.[0] || null; setData('image', file); setImagePreview(file ? URL.createObjectURL(file) : null); }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-600 file:mr-4 file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-white file:rounded-lg" />
+                        {imagePreview && <img src={imagePreview} alt="Product preview" className="mt-3 h-32 w-32 rounded-xl object-cover border border-slate-200" />}
+                        {errors.image && <p className="mt-2 text-sm text-red-600 font-medium">{errors.image}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
