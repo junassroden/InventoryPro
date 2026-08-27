@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -24,6 +25,8 @@ class RegisterController extends Controller
             'name' => [
                 'required',
                 'string',
+                'regex:/^[\pL\s\'-]+$/u',
+                'min:2',
                 'max:100',
             ],
 
@@ -94,26 +97,32 @@ class RegisterController extends Controller
             ]);
         }
 
-        $user = DB::transaction(function () use (
-            $validated,
-            $email,
-            $otpRecord
-        ) {
+        try {
+            $user = DB::transaction(function () use (
+                $validated,
+                $email,
+                $otpRecord
+            ) {
+                $user = User::create([
+                    'name' => trim($validated['name']),
+                    'email' => $email,
+                    'password' => Hash::make($validated['password']),
+                ]);
 
-            $user = User::create([
-                'name' => $validated['name'],
+                $otpRecord->delete();
 
+                return $user;
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Registration failed.', [
                 'email' => $email,
-
-                'password' => Hash::make(
-                    $validated['password']
-                ),
+                'message' => $exception->getMessage(),
             ]);
 
-            $otpRecord->delete();
-
-            return $user;
-        });
+            throw ValidationException::withMessages([
+                'email' => 'We could not create your account right now. Please try again.',
+            ]);
+        }
 
         Auth::login($user);
 
