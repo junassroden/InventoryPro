@@ -67,7 +67,7 @@ class OtpController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to save OTP: ' . $e->getMessage(),
+                'message' => 'Unable to save the verification code. Please try again.',
             ], 500);
         }
 
@@ -116,8 +116,7 @@ class OtpController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'EmailJS rejected the request: ' .
-                        $response->body(),
+                    'message' => 'The verification email could not be sent. Please try again.',
                 ], 500);
             }
 
@@ -135,8 +134,7 @@ class OtpController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'EmailJS connection error: ' .
-                    $e->getMessage(),
+                'message' => 'The verification email could not be sent. Please try again.',
             ], 500);
         }
     }
