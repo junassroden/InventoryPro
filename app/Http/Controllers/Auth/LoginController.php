@@ -17,11 +17,13 @@ class LoginController extends Controller
             'email' => [
                 'required',
                 'email',
+                'max:255',
             ],
 
             'password' => [
                 'required',
                 'string',
+                'max:128',
             ],
 
             'remember' => [
