@@ -97,7 +97,7 @@ export default function Index({ products, filters, categories }) {
 
             </div>
 
-            {/* TABLE */}
+            {/* INVENTORY PANELS */}
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
@@ -108,55 +108,20 @@ export default function Index({ products, filters, categories }) {
                         </p>
                     </div>
                 ) : (
-                            <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide border-b border-slate-100 bg-slate-50">
-                                    <th className="px-6 py-3.5">Product</th>
-                                    <th className="px-6 py-3.5">Category</th>
-                                    <th className="px-6 py-3.5">Stock</th>
-                                    <th className="px-6 py-3.5">Value</th>
-                                    <th className="px-6 py-3.5 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4 sm:p-6">
                                 {products.data.map((product) => (
-                                    <tr
-                                        key={product.id}
-                                        className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-slate-900">
-                                            {product.name}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-500">
-                                            {product.category}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${product.status === 'Out of Stock' ? 'bg-red-100 text-red-600' : product.status === 'Low Stock' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
-                                                {product.status} ({product.stock})
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">${(product.stock * product.price).toFixed(2)}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={`/inventory/${product.id}/edit`}
-                                                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(product)}
-                                                    className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                    <article key={product.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                        {product.image_url ? <img src={product.image_url} alt={product.name} className="h-44 w-full object-cover" /> : <div className="h-44 bg-slate-100 flex items-center justify-center text-slate-400 text-sm">No image</div>}
+                                        <div className="p-5">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0"><h2 className="font-bold text-slate-900 truncate">{product.name}</h2><p className="mt-1 text-sm text-slate-500 truncate">{product.category}</p></div>
+                                                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.status === 'Out of Stock' ? 'bg-red-100 text-red-600' : product.status === 'Low Stock' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>{product.status}</span>
                                             </div>
-                                        </td>
-                                    </tr>
+                                            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-slate-400">Stock</dt><dd className="font-semibold text-slate-900">{product.stock} / {product.min_stock} min</dd></div><div><dt className="text-slate-400">Value</dt><dd className="font-semibold text-slate-900">${(product.stock * product.price).toFixed(2)}</dd></div></dl>
+                                            <div className="mt-5 flex items-center justify-end gap-2 border-t border-slate-100 pt-4"><Link href={`/inventory/${product.id}/edit`} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" title="Edit product"><Pencil className="w-4 h-4" /></Link><button onClick={() => handleDelete(product)} className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600" title="Delete product"><Trash2 className="w-4 h-4" /></button></div>
+                                        </div>
+                                    </article>
                                 ))}
-                            </tbody>
-                        </table>
                     </div>
                 )}
 
