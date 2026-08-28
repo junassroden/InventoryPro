@@ -13,7 +13,6 @@ export default function EditProduct({ product, categories }) {
         category_id: product.category_id,
         stock: product.stock,
         min_stock: product.min_stock,
-        price: product.price,
         image: null,
     });
 
@@ -33,9 +32,13 @@ export default function EditProduct({ product, categories }) {
                 Back to Inventory
             </Link>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm max-w-xl">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm max-w-2xl">
 
-                <h2 className="text-lg font-bold text-slate-900 mb-6">Edit Product</h2>
+                <div className="mb-7">
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Inventory item</p>
+                    <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Edit product</h2>
+                    <p className="mt-2 text-sm text-slate-500">Keep the stock record current for your team.</p>
+                </div>
 
                 <form onSubmit={submit} className="space-y-5">
 
@@ -70,11 +73,6 @@ export default function EditProduct({ product, categories }) {
                             <label htmlFor="min_stock" className="block text-sm font-semibold text-slate-700 mb-2">Minimum Stock Level</label>
                             <input id="min_stock" type="number" min="0" value={data.min_stock} onChange={(e) => setData('min_stock', e.target.value)} className={`w-full px-4 py-3 rounded-xl border bg-slate-50 ${errors.min_stock ? 'border-red-500 bg-red-50' : 'border-slate-200'} text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all`} />
                             {errors.min_stock && <p className="mt-2 text-sm text-red-600 font-medium">{errors.min_stock}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="price" className="block text-sm font-semibold text-slate-700 mb-2">Unit Price</label>
-                            <input id="price" type="number" min="0" step="0.01" value={data.price} onChange={(e) => setData('price', e.target.value)} className={`w-full px-4 py-3 rounded-xl border bg-slate-50 ${errors.price ? 'border-red-500 bg-red-50' : 'border-slate-200'} text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all`} />
-                            {errors.price && <p className="mt-2 text-sm text-red-600 font-medium">{errors.price}</p>}
                         </div>
                     </div>
 
@@ -121,7 +119,7 @@ export default function EditProduct({ product, categories }) {
                         )}
                     </div>
 
-                    <div className="flex items-center gap-3 pt-2">
+                    <div className="flex flex-col-reverse sm:flex-row sm:items-center gap-3 pt-2">
                         <button
                             type="submit"
                             disabled={processing}
