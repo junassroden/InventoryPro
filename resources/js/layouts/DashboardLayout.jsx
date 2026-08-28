@@ -5,7 +5,6 @@ import { Toaster, toast } from 'react-hot-toast';
 import {
     LayoutDashboard,
     Package,
-    BarChart3,
     Settings,
     LogOut,
     Menu,
@@ -153,12 +152,6 @@ export default function DashboardLayout({
                         active={currentUrl.startsWith('/inventory')}
                     />
 
-                    <SidebarLink
-                        href="/analytics"
-                        icon={<BarChart3 className="w-5 h-5" />}
-                        label="Analytics"
-                        active={currentUrl.startsWith('/analytics')}
-                    />
 
                     <SidebarLink
                         href="/categories"
