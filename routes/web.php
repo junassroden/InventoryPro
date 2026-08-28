@@ -3,7 +3,6 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\OtpController;
-use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
@@ -42,15 +41,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    // ANALYTICS
-    Route::get('/analytics', [AnalyticsController::class, 'index'])
-        ->name('analytics');
-
     // INVENTORY (PRODUCTS)
-    // /inventory, /inventory/create, /inventory/{product}/edit, etc.
+    // /inventory, /inventory/create, /inventory/{product}, /inventory/{product}/edit, etc.
     Route::resource('inventory', ProductController::class)
-        ->parameters(['inventory' => 'product'])
-        ->except(['show']);
+        ->parameters(['inventory' => 'product']);
 
     // CATEGORIES
     // list + create/update/delete only, no dedicated show/create/edit pages
