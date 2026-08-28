@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
 import DashboardLayout from '../../components/DashboardLayout';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Search, ArrowRight } from 'lucide-react';
 
 export default function Index({ products, filters, categories }) {
 
@@ -32,20 +32,6 @@ export default function Index({ products, filters, categories }) {
         return () => clearTimeout(timeout);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, categoryId, status]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE
-    |--------------------------------------------------------------------------
-    */
-
-    const handleDelete = (product) => {
-        if (!window.confirm(`Delete "${product.name}"? This cannot be undone.`)) {
-            return;
-        }
-
-        router.delete(`/inventory/${product.id}`, { preserveScroll: true });
-    };
 
     return (
         <DashboardLayout title="Inventory">
@@ -117,8 +103,8 @@ export default function Index({ products, filters, categories }) {
                                                 <div className="min-w-0"><h2 className="font-bold text-slate-900 truncate">{product.name}</h2><p className="mt-1 text-sm text-slate-500 truncate">{product.category}</p></div>
                                                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.status === 'Out of Stock' ? 'bg-red-100 text-red-600' : product.status === 'Low Stock' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>{product.status}</span>
                                             </div>
-                                            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-slate-400">Stock</dt><dd className="font-semibold text-slate-900">{product.stock} / {product.min_stock} min</dd></div><div><dt className="text-slate-400">Value</dt><dd className="font-semibold text-slate-900">${(product.stock * product.price).toFixed(2)}</dd></div></dl>
-                                            <div className="mt-5 flex items-center justify-end gap-2 border-t border-slate-100 pt-4"><Link href={`/inventory/${product.id}/edit`} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" title="Edit product"><Pencil className="w-4 h-4" /></Link><button onClick={() => handleDelete(product)} className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600" title="Delete product"><Trash2 className="w-4 h-4" /></button></div>
+                                            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-slate-400">On hand</dt><dd className="font-semibold text-slate-900">{product.stock}</dd></div><div><dt className="text-slate-400">Restock at</dt><dd className="font-semibold text-slate-900">{product.min_stock}</dd></div></dl>
+                                            <div className="mt-5 border-t border-slate-100 pt-4"><Link href={`/inventory/${product.id}`} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-600">View item <ArrowRight className="w-4 h-4" /></Link></div>
                                         </div>
                                     </article>
                                 ))}
