@@ -40,7 +40,6 @@ class ProductController extends Controller
                 'category' => $product->category->name ?? 'Uncategorized',
                 'category_id' => $product->category_id,
                 'min_stock' => $product->min_stock,
-                'price' => (float) $product->price,
                 'image_url' => $product->image_path ? Storage::url($product->image_path) : null,
                 'status' => $product->stock === 0 ? 'Out of Stock' : ($product->stock <= $product->min_stock ? 'Low Stock' : 'In Stock'),
             ]);
@@ -69,6 +68,23 @@ class ProductController extends Controller
         ]);
     }
 
+    public function show(Product $product)
+    {
+        $product->load('category:id,name');
+
+        return Inertia::render('Inventory/ProductDetails', [
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'stock' => $product->stock,
+                'min_stock' => $product->min_stock,
+                'category' => $product->category->name ?? 'Uncategorized',
+                'image_url' => $product->image_path ? Storage::url($product->image_path) : null,
+                'status' => $product->stock === 0 ? 'Out of Stock' : ($product->stock <= $product->min_stock ? 'Low Stock' : 'In Stock'),
+            ],
+        ]);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | STORE PRODUCT
@@ -82,7 +98,6 @@ class ProductController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'stock' => ['required', 'integer', 'min:0'],
             'min_stock' => ['required', 'integer', 'min:0'],
-            'price' => ['required', 'numeric', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
@@ -107,7 +122,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         return Inertia::render('Inventory/EditProduct', [
-            'product' => array_merge($product->only(['id', 'name', 'category_id', 'stock', 'min_stock', 'price']), [
+            'product' => array_merge($product->only(['id', 'name', 'category_id', 'stock', 'min_stock']), [
                 'image_url' => $product->image_path ? Storage::url($product->image_path) : null,
             ]),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
@@ -127,7 +142,6 @@ class ProductController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'stock' => ['required', 'integer', 'min:0'],
             'min_stock' => ['required', 'integer', 'min:0'],
-            'price' => ['required', 'numeric', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
