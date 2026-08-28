@@ -131,10 +131,10 @@ export default function Dashboard({
                     <div className="flex items-center justify-between mb-5">
                         <h2 className="text-lg font-bold text-slate-900">Low Stock Alerts</h2>
                         <Link
-                            href="/analytics"
+                            href="/inventory"
                             className="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1"
                         >
-                            Full analytics
+                            View inventory
                             <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
