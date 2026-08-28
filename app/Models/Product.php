@@ -15,14 +15,12 @@ class Product extends Model
         'name',
         'stock',
         'min_stock',
-        'price',
         'image_path',
     ];
 
     protected $casts = [
         'stock' => 'integer',
         'min_stock' => 'integer',
-        'price' => 'decimal:2',
     ];
 
     public function category(): BelongsTo
