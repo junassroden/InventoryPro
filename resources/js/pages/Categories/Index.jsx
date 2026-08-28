@@ -44,14 +44,22 @@ export default function Index({ categories }) {
 
             {/* ADD CATEGORY */}
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-sm">
 
-                <h2 className="text-lg font-bold text-slate-900 mb-4">Add Category</h2>
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Organize inventory</p>
+                        <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Add a category</h2>
+                    </div>
+                    <p className="text-sm text-slate-500">{categories.length} {categories.length === 1 ? 'category' : 'categories'}</p>
+                </div>
 
                 <form onSubmit={submit} className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
 
                     <div className="flex-1 w-full">
+                        <label htmlFor="category-name" className="sr-only">Category name</label>
                         <input
+                            id="category-name"
                             type="text"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
